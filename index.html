@@ -6,8 +6,6 @@
     <title>For Maria Paulinne 🌷</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
-    </script>
     <style>
         :root {
             --blush: #fff0f5;
@@ -104,9 +102,6 @@
         }
         .section:nth-child(4) {
             animation-delay: .35s;
-        }
-        .section:nth-child(5) {
-            animation-delay: .45s;
         }
 
         @keyframes fadeUp {
@@ -629,80 +624,14 @@
             font-style: italic;
         }
 
-        /* ---------- SHARE ---------- */
-        .share-section {
+        .persist-note {
+            font-family: 'Jost', sans-serif;
+            font-size: .75rem;
+            opacity: .6;
             text-align: center;
-        }
-        .share {
-            max-width: 480px;
-            margin: 0 auto;
-            border: 1px solid var(--gold-line);
-            border-radius: 18px;
-            padding: 2rem 1.5rem;
-            background: rgba(255, 255, 255, .5);
-        }
-        .share h3 {
-            font-family: 'Jost', sans-serif;
-            font-weight: 500;
-            letter-spacing: .03em;
-            font-size: .98rem;
-            color: var(--rose-deep);
-            margin-bottom: .4rem;
-        }
-        .share p {
-            font-size: .95rem;
-            opacity: .75;
-            margin-bottom: 1.1rem;
-            font-family: 'Jost', sans-serif;
-            line-height: 1.6;
-        }
-        .share input {
-            width: 100%;
-            padding: .75rem 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--gold-line);
-            background: #fff;
-            color: var(--ink);
-            font-family: 'Jost', sans-serif;
-            font-size: .85rem;
-            margin-bottom: .8rem;
-        }
-        .share button {
-            font-family: 'Jost', sans-serif;
-            letter-spacing: .1em;
-            text-transform: uppercase;
-            font-size: .7rem;
-            padding: .7rem 1.5rem;
-            border-radius: 999px;
-            border: 1px solid var(--rose);
-            background: transparent;
-            color: var(--rose-deep);
-            cursor: pointer;
-            transition: .3s;
-        }
-        .share button:hover {
-            background: var(--rose);
-            color: #fff;
-        }
-        #qrcode {
-            margin: 1.1rem auto 0;
-            display: flex;
-            justify-content: center;
-        }
-        #qrcode img,
-        #qrcode canvas {
-            border-radius: 10px;
-            background: #fff;
-            padding: 10px;
-        }
-        .signoff-note {
-            margin-top: 1.4rem;
-            font-size: .72rem;
-            opacity: .5;
-            font-family: 'Jost', sans-serif;
+            margin-top: 0.5rem;
         }
 
-        /* ---------- RESPONSIVE ---------- */
         @media (max-width: 640px) {
             .greeting-wrap {
                 gap: 1.4rem;
@@ -848,6 +777,7 @@
         <div style="text-align:center;">
             <button class="add-photos-btn" id="addPhotosBtn">+ Add photos</button>
         </div>
+        <p class="persist-note">📸 Photos you add are saved in your browser and will stay even after refreshing.</p>
         <div style="text-align:center;margin-top:14px;">
             <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ back to top</button>
         </div>
@@ -889,23 +819,6 @@
             </div>
         </div>
         <span class="hint" id="envHint">tap the envelope to open</span>
-        <div style="text-align:center;margin-top:14px;">
-            <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ back to top</button>
-        </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ====== SHARE ====== -->
-    <section class="section share-section">
-        <div class="share">
-            <h3>🐾 Ready to send this to Maria?</h3>
-            <p>Put this page online first (see the steps Claude gave you in chat), then paste your live link below to turn it into a QR code she can scan to open her surprise instantly.</p>
-            <input type="text" id="urlInput" placeholder="Paste the page's link here…">
-            <br>
-            <button id="genQr">Generate QR code</button>
-            <div id="qrcode"></div>
-        </div>
         <div style="text-align:center;margin-top:14px;">
             <button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ back to top</button>
         </div>
@@ -992,8 +905,10 @@
             checkEmpty();
         }
 
+        // Load saved photos
         (store.photos || []).forEach(p => addPhotoTile(p.src, p.id));
 
+        // Attempt to load placeholder images from /photos/ folder (optional)
         for (let i = 1; i <= MAX_AUTOLOAD; i++) {
             const img = new Image();
             img.onload = () => addPhotoTile('photos/' + i + '.jpg');
@@ -1026,6 +941,8 @@
                 };
                 reader.readAsDataURL(file);
             });
+            // Clear the input so the same file can be re-added if needed
+            e.target.value = '';
         });
 
         // ===== AUDIO — Happy Birthday instrumental =====
@@ -1157,16 +1074,6 @@
             letterSaveTimer = setTimeout(() => { saveStore({ letterHtml: letterEl.innerHTML }); }, 500);
         });
         letterEl.addEventListener('blur', () => saveStore({ letterHtml: letterEl.innerHTML }));
-
-        // ===== QR CODE =====
-        document.getElementById('genQr').addEventListener('click', function() {
-            const url = document.getElementById('urlInput').value.trim();
-            const box = document.getElementById('qrcode');
-            box.innerHTML = '';
-            if (!url) { box.innerHTML = '<p style="font-family:Jost,sans-serif;font-size:.8rem;opacity:.7;">Paste a link first 🙂</p>';
-                return; }
-            new QRCode(box, { text: url, width: 180, height: 180, colorDark: "#b6285a", colorLight: "#ffffff" });
-        });
     </script>
 
 </body>
